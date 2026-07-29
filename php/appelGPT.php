@@ -10,7 +10,7 @@ const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
 const MODEL_CHOICE_OPENAI_GPT35_INSTRUCT = 'openai_gpt35_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
-const TOGETHER_CHAT_COMPLETIONS_ENDPOINT = 'https://api.together.ai/v1/chat/completions';
+const TOGETHER_COMPLETIONS_ENDPOINT = 'https://api.together.ai/v1/completions';
 const OPENAI_COMPLETIONS_ENDPOINT = 'https://api.openai.com/v1/completions';
 const MAX_PROMPT_LENGTH = 620;
 
@@ -109,39 +109,26 @@ function callJsonApi(
 }
 
 /**
- * Appelle Qwen via l'endpoint de chat de Together AI.
+ * Appelle Qwen en complétion textuelle brute via Together AI.
+ *
+ * Le prompt est transmis sans gabarit conversationnel. Les espaces situés à
+ * sa fin font donc partie du contexte probabiliste, comme avec l'ancien
+ * endpoint OpenAI Completions.
  */
 function callTogether(string $prompt, string $apiKey, string $model): string
 {
     $payload = [
         'model' => $model,
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => (
-                    'You are a text-completion engine. Continue the exact text supplied by the user. '
-                    . 'Return only the continuation, without quotation marks, labels, explanations, '
-                    . 'or repetition of the supplied text. Begin immediately with the next characters.'
-                ),
-            ],
-            [
-                'role' => 'user',
-                'content' => $prompt,
-            ],
-        ],
+        'prompt' => $prompt,
         'temperature' => 0.7,
         'max_tokens' => 10,
-        // Together renvoie une collection top_logprobs distincte par token.
         'logprobs' => 5,
         'top_p' => 1.0,
         'top_k' => 50,
-        'reasoning' => [
-            'enabled' => false,
-        ],
     ];
 
     return callJsonApi(
-        TOGETHER_CHAT_COMPLETIONS_ENDPOINT,
+        TOGETHER_COMPLETIONS_ENDPOINT,
         $payload,
         $apiKey,
         'Together AI'
