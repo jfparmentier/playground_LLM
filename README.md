@@ -4,7 +4,7 @@ Cette application permet d’illustrer le fonctionnement autoregressif d’un gr
 
 ## Modèles disponibles
 
-Le menu de l’interface propose trois modèles :
+Le menu de paramètres, accessible par l’icône en forme d’engrenage en haut à droite, propose trois modèles :
 
 - **GPT-OSS 20B**, développé par OpenAI et appelé par l’API serverless Fireworks AI ;
 - **Qwen3.5-9B**, développé par Alibaba Cloud et appelé par Together AI ;
@@ -31,7 +31,10 @@ return [
     'openai_api_key' => 'VOTRE_CLE_OPENAI',
     'openai_model' => 'gpt-3.5-turbo-instruct',
 
-    'email_domain' => 'ipsa.fr',
+    'email_domains' => [
+        'ipsa.fr',
+        'etudiant.ipsa.fr',
+    ],
 ];
 ```
 
@@ -52,7 +55,7 @@ Les mêmes valeurs peuvent être définies avec les variables d’environnement 
 
 ## Validation de l’adresse électronique
 
-La syntaxe de l’adresse et son domaine sont contrôlés côté serveur. Le domaine autorisé est défini par `email_domain` dans `php/config.local.php`. Une session PHP autorisée est créée après validation et vérifiée avant chaque appel au modèle.
+La syntaxe de l’adresse et son domaine sont contrôlés côté serveur. Les domaines autorisés sont définis par le tableau `email_domains` dans `php/config.local.php`. L’ancienne propriété `email_domain` reste acceptée pour compatibilité. Une session PHP autorisée est créée après validation et vérifiée avant chaque appel au modèle.
 
 ## Structure principale
 

@@ -2,7 +2,7 @@
 
 /**
  * Copiez ce fichier sous le nom config.local.php, puis renseignez les clés API
- * nécessaires et le domaine de messagerie autorisé.
+ * nécessaires et les domaines de messagerie autorisés.
  *
  * Ne publiez jamais config.local.php et ne l'ajoutez pas à un dépôt Git.
  */
@@ -23,8 +23,11 @@ return [
     'openai_api_key' => 'COLLEZ_ICI_VOTRE_CLE_OPENAI',
     'openai_model' => 'gpt-3.5-turbo-instruct',
 
-    // Saisissez le domaine sans adresse utilisateur. Les formes "ipsa.fr"
-    // et "@ipsa.fr" sont acceptées. Les sous-domaines ne sont pas autorisés
-    // implicitement : "etudiant.ipsa.fr" doit être configuré explicitement.
-    'email_domain' => 'ipsa.fr',
+    // Saisissez un ou plusieurs domaines sans adresse utilisateur. Les formes
+    // "ipsa.fr" et "@ipsa.fr" sont acceptées. Les sous-domaines ne sont pas
+    // autorisés implicitement : ajoutez-les explicitement dans ce tableau.
+    'email_domains' => [
+        'ipsa.fr',
+        'etudiant.ipsa.fr',
+    ],
 ];
