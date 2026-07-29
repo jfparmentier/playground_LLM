@@ -1,62 +1,67 @@
-# Playground pédagogique de complétion LLM
+# TP LLM — interface pédagogique de complétion
 
-Cette version utilise l'endpoint moderne de chat de Together AI :
+Cette application permet d’illustrer le fonctionnement autoregressif d’un grand modèle de langage. L’utilisateur commence une phrase, le modèle la poursuit, puis l’interface affiche un arbre des probabilités associées aux tokens générés.
 
-```text
-POST https://api.together.ai/v1/chat/completions
+## Modèles disponibles
+
+Le menu de l’interface propose trois modèles :
+
+- **GPT-OSS 20B**, développé par OpenAI et appelé par l’API serverless Fireworks AI ;
+- **Qwen3.5-9B**, développé par Alibaba Cloud et appelé par Together AI ;
+- **GPT-3.5 Turbo Instruct**, développé et appelé par OpenAI.
+
+GPT-OSS 20B est sélectionné par défaut.
+
+## Configuration
+
+Copiez le fichier `php/config.example.php` sous le nom `php/config.local.php`, puis renseignez les clés nécessaires :
+
+```php
+<?php
+
+return [
+    'together_api_key' => 'VOTRE_CLE_TOGETHER_AI',
+    'together_model' => 'Qwen/Qwen3.5-9B',
+    'together_completions_endpoint' =>
+        'https://api.together.ai/v1/completions',
+
+    'fireworks_api_key' => 'VOTRE_CLE_FIREWORKS_AI',
+    'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
+
+    'openai_api_key' => 'VOTRE_CLE_OPENAI',
+    'openai_model' => 'gpt-3.5-turbo-instruct',
+
+    'email_domain' => 'ipsa.fr',
+];
 ```
 
-Un message système demande au modèle de produire uniquement la continuation du texte saisi. Cette formulation permet d'utiliser la structure moderne des `logprobs`, qui associe explicitement une liste d'alternatives à chaque token généré.
+Le fichier `php/config.local.php` est exclu du dépôt par `.gitignore`. Il ne doit jamais être publié.
 
-Le modèle configuré par défaut est :
+Les mêmes valeurs peuvent être définies avec les variables d’environnement suivantes :
 
-```text
-Qwen/Qwen3.5-9B
-```
-
-## Configuration recommandée
-
-Définissez la clé API dans l'environnement du serveur web :
-
-```bash
-export TOGETHER_API_KEY="votre_cle_together"
-export TOGETHER_MODEL="Qwen/Qwen3.5-9B"
-```
-
-Selon le serveur web utilisé, les variables doivent être configurées dans Apache, Nginx, PHP-FPM, le panneau d'hébergement ou le système de déploiement.
-
-## Configuration locale alternative
-
-Lorsque les variables d'environnement ne sont pas disponibles :
-
-1. copiez `php/config.example.php` sous le nom `php/config.local.php` ;
-2. remplacez la valeur d'exemple par votre clé Together AI ;
-3. ne publiez jamais ce fichier et ne l'ajoutez pas au contrôle de version.
+- `TOGETHER_API_KEY`, `TOGETHER_MODEL`, `TOGETHER_COMPLETIONS_ENDPOINT` ;
+- `FIREWORKS_API_KEY`, `FIREWORKS_MODEL` ;
+- `OPENAI_API_KEY`, `OPENAI_MODEL`.
 
 ## Prérequis
 
-- PHP avec l'extension cURL ;
-- accès sortant HTTPS vers `api.together.ai` ;
-- une clé API Together AI valide.
+- PHP avec l’extension cURL ;
+- sessions PHP activées ;
+- accès HTTPS sortant vers les API configurées ;
+- au moins une clé API correspondant à un modèle proposé.
 
-## Principales modifications
+## Validation de l’adresse électronique
 
-- remplacement de l'appel OpenAI par l'endpoint de chat Together AI ;
-- suppression de la clé API intégrée au code ;
-- modèle configurable ;
-- validation du prompt et gestion des erreurs HTTP/JSON ;
-- traitement défensif de plusieurs structures de `logprobs` ;
-- échappement HTML des tokens affichés.
+La syntaxe de l’adresse et son domaine sont contrôlés côté serveur. Le domaine autorisé est défini par `email_domain` dans `php/config.local.php`. Une session PHP autorisée est créée après validation et vérifiée avant chaque appel au modèle.
 
+## Structure principale
 
-## Affichage des probabilités
+- `index.html` : interface utilisateur ;
+- `scripts/gestionLLM.js` : appels depuis l’interface, normalisation des probabilités et construction de l’arbre ;
+- `php/appelLLM.php` : validation de la requête et routage vers le fournisseur sélectionné ;
+- `php/verifieEmail.php` : validation serveur de l’adresse électronique ;
+- `php/config.example.php` : modèle de configuration sans secret.
 
-Pour chaque position, l'interface affiche cinq candidats classés par probabilité
-décroissante. Le token effectivement généré est indiqué en gras à son rang réel. L'endpoint de chat renvoie
-une collection `top_logprobs` séparée pour chaque token généré ; le nombre de
-candidats affichés ne dépend donc plus du rang probabiliste du token tiré. Les
-probabilités très faibles sont affichées sous la forme `< 0,01%` au lieu d'être
-arrondies à zéro.
+## Sécurité
 
-Les probabilités correspondent au contexte complet réellement envoyé au modèle :
-le message système de continuation et le texte saisi par l'utilisateur.
+Le navigateur transmet uniquement un identifiant de modèle autorisé. Les endpoints, les modèles et les clés API sont sélectionnés côté PHP. Aucune clé API ne doit être placée dans les fichiers JavaScript ou HTML.

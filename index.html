@@ -2,7 +2,7 @@
 <html>
 <head>
 
-	<title>TP IPSA LLM</title>
+	<title>TP LLM</title>
 
 	<!-- Basic Page Needs
 	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -31,7 +31,7 @@
 	<script src="scripts/gestionPage.js?v=2"></script>
 	<script src="scripts/generationId.js"></script>
 	<script src="scripts/vuePremiereConnexion.js?v=2"></script>
-	<script src="scripts/gestionGPT.js?v=6"></script>
+	<script src="scripts/gestionLLM.js?v=7"></script>
 	<script src="scripts/appelsPHP.js"></script>
 
 </head>
@@ -47,7 +47,7 @@
 		</div> -->
 
 		<div class="vue-exclusive" id="vue_premiere_connexion" style="display: none; margin-top: 3%;" default>
-			<h5>Accès restreint.</strong></h5>
+			<h5>Accès restreint.</h5>
 			<label for="input_email_utilisateur">Entrez votre e-mail :</label>
 			<input class="u-full-width" type="text" placeholder="prenom.nom@domaine.fr" id="input_email_utilisateur">
 			<div class="vue" id="message_erreur_email" style="display: none;" hide>
@@ -60,13 +60,13 @@
 		</div>
 
 		<div class="vue-exclusive" id="pagePrompt">
-			<h5>TP IPSA LLM </h5>			
+			<h5>TP LLM</h5>			
 
 			<label for="model_llm">Modèle de complétion</label>
 			<select class="u-full-width" id="model_llm" onchange="changeModeleSelectionne();">
-				<option value="together_qwen" selected>Qwen/Qwen3.5-9B — Together AI (complétion)</option>
-				<option value="fireworks_gpt_oss_20b">GPT-OSS 20B — Fireworks AI (serverless)</option>
-				<option value="openai_gpt35_instruct">gpt-3.5-turbo-instruct — OpenAI</option>
+				<option value="fireworks_oss_20b" selected>GPT-OSS 20B — OpenAI</option>
+				<option value="together_qwen">Qwen3.5-9B — Alibaba Cloud</option>
+				<option value="openai_instruct">GPT-3.5 Turbo Instruct — OpenAI</option>
 			</select>
 
 			<!-- <label for="temperature">Temperature:</label>

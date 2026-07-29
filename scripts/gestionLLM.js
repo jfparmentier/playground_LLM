@@ -566,7 +566,7 @@ function start(relance) {
     afficheVue("waiting");
 
     var modelSelect = document.getElementById("model_llm");
-    var modele = modelSelect ? modelSelect.value : "together_qwen";
+    var modele = modelSelect ? modelSelect.value : "fireworks_oss_20b";
 
     var params_php = {
         prompt: prompt,
@@ -574,18 +574,11 @@ function start(relance) {
     };
 
     appel_php_async(
-        "php/appelGPT.php",
+        "php/appelLLM.php",
         JSON.stringify(params_php),
-        function (reponse_GPT_json) {
+        function (reponse_LLM_json) {
             try {
-                // Conserve la réponse brute et l'objet JSON dans la console afin
-                // de pouvoir inspecter précisément la structure renvoyée par l'API.
-                console.groupCollapsed("Réponse JSON du modèle");
-                console.log("Réponse brute :", reponse_GPT_json);
-
-                var oJson = JSON.parse(reponse_GPT_json);
-                console.log("Objet JSON analysé :", oJson);
-                console.groupEnd();
+                var oJson = JSON.parse(reponse_LLM_json);
 
                 if (oJson.error) {
                     throw new Error(oJson.error.message || "Erreur retournée par le modèle.");
@@ -596,17 +589,17 @@ function start(relance) {
                 }
 
                 var choice = oJson.choices[0];
-                var reponseGPT_str = typeof choice.text === "string"
+                var reponseLLM_str = typeof choice.text === "string"
                     ? choice.text
                     : (choice.message && typeof choice.message.content === "string"
                         ? choice.message.content
                         : "");
 
-                if (reponseGPT_str === "") {
+                if (reponseLLM_str === "") {
                     throw new Error("Le modèle n'a généré aucun texte.");
                 }
 
-                document.getElementById("prompt").value += reponseGPT_str;
+                document.getElementById("prompt").value += reponseLLM_str;
                 highlightText();
 
                 var logprobs = normaliseLogprobs(choice);

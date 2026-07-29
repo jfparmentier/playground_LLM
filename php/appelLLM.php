@@ -7,8 +7,8 @@ require_once __DIR__ . '/bootstrap.php';
 header('Content-Type: application/json; charset=utf-8');
 
 const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
-const MODEL_CHOICE_FIREWORKS_GPT_OSS_20B = 'fireworks_gpt_oss_20b';
-const MODEL_CHOICE_OPENAI_GPT35_INSTRUCT = 'openai_gpt35_instruct';
+const MODEL_CHOICE_FIREWORKS_OSS_20B = 'fireworks_oss_20b';
+const MODEL_CHOICE_OPENAI_INSTRUCT = 'openai_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
 const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/gpt-oss-20b';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
@@ -110,8 +110,7 @@ function callJsonApi(
         );
     }
 
-    // Vérifie que le fournisseur a bien renvoyé du JSON, puis transmet la
-    // réponse telle quelle au navigateur pour permettre son inspection.
+    // Vérifie que le fournisseur a bien renvoyé une réponse JSON valide.
     json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
     return $response;
@@ -245,7 +244,7 @@ try {
 
     $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
     $prompt = $params['prompt'] ?? null;
-    $modelChoice = $params['modele'] ?? MODEL_CHOICE_TOGETHER_QWEN;
+    $modelChoice = $params['modele'] ?? MODEL_CHOICE_FIREWORKS_OSS_20B;
 
     if (!is_string($prompt) || trim($prompt) === '') {
         sendJsonError('Le prompt est absent ou invalide.', 400);
@@ -311,7 +310,7 @@ try {
         exit;
     }
 
-    if ($modelChoice === MODEL_CHOICE_FIREWORKS_GPT_OSS_20B) {
+    if ($modelChoice === MODEL_CHOICE_FIREWORKS_OSS_20B) {
         $apiKey = readConfiguredString(
             'FIREWORKS_API_KEY',
             $localConfig,
@@ -341,7 +340,7 @@ try {
         exit;
     }
 
-    if ($modelChoice === MODEL_CHOICE_OPENAI_GPT35_INSTRUCT) {
+    if ($modelChoice === MODEL_CHOICE_OPENAI_INSTRUCT) {
         $apiKey = readConfiguredString(
             'OPENAI_API_KEY',
             $localConfig,
