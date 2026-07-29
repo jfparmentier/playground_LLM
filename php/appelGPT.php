@@ -7,10 +7,14 @@ require_once __DIR__ . '/bootstrap.php';
 header('Content-Type: application/json; charset=utf-8');
 
 const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
+const MODEL_CHOICE_FIREWORKS_GPT_OSS_20B = 'fireworks_gpt_oss_20b';
 const MODEL_CHOICE_OPENAI_GPT35_INSTRUCT = 'openai_gpt35_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
+const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/gpt-oss-20b';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
-const TOGETHER_COMPLETIONS_ENDPOINT = 'https://api.together.ai/v1/completions';
+const TOGETHER_COMPLETIONS_ENDPOINT_V1 = 'https://api.together.ai/v1/completions';
+const TOGETHER_COMPLETIONS_ENDPOINT_V2 = 'https://api-inference.together.ai/v2/completions';
+const FIREWORKS_COMPLETIONS_ENDPOINT = 'https://api.fireworks.ai/inference/v1/completions';
 const OPENAI_COMPLETIONS_ENDPOINT = 'https://api.openai.com/v1/completions';
 const MAX_PROMPT_LENGTH = 620;
 const COMPLETION_MAX_TOKENS = 10;
@@ -116,8 +120,23 @@ function callJsonApi(
 /**
  * Appelle Qwen avec une seule complétion et un seul appel HTTP Together AI.
  */
-function callTogether(string $prompt, string $apiKey, string $model): string
-{
+function callTogether(
+    string $prompt,
+    string $apiKey,
+    string $model,
+    string $endpoint
+): string {
+    $allowedEndpoints = [
+        TOGETHER_COMPLETIONS_ENDPOINT_V1,
+        TOGETHER_COMPLETIONS_ENDPOINT_V2,
+    ];
+
+    if (!in_array($endpoint, $allowedEndpoints, true)) {
+        throw new InvalidArgumentException(
+            'L’endpoint Together AI configuré n’est pas autorisé.'
+        );
+    }
+
     $payload = [
         'model' => $model,
         'prompt' => $prompt,
@@ -130,10 +149,37 @@ function callTogether(string $prompt, string $apiKey, string $model): string
     ];
 
     return callJsonApi(
-        TOGETHER_COMPLETIONS_ENDPOINT,
+        $endpoint,
         $payload,
         $apiKey,
         'Together AI'
+    );
+}
+
+/**
+ * Appelle un modèle serverless Fireworks via l'endpoint de complétion brute.
+ * Fireworks distingue l'activation des logprobs du nombre d'alternatives
+ * demandées avec le paramètre top_logprobs.
+ */
+function callFireworks(string $prompt, string $apiKey, string $model): string
+{
+    $payload = [
+        'model' => $model,
+        'prompt' => $prompt,
+        'temperature' => 0.7,
+        'max_tokens' => COMPLETION_MAX_TOKENS,
+        'logprobs' => true,
+        'top_logprobs' => REQUESTED_LOGPROBS,
+        'top_p' => 1.0,
+        'n' => 1,
+        'stream' => false,
+    ];
+
+    return callJsonApi(
+        FIREWORKS_COMPLETIONS_ENDPOINT,
+        $payload,
+        $apiKey,
+        'Fireworks AI'
     );
 }
 
@@ -240,6 +286,12 @@ try {
                 ? $localConfig['model']
                 : DEFAULT_TOGETHER_MODEL
         );
+        $endpoint = readConfiguredString(
+            'TOGETHER_COMPLETIONS_ENDPOINT',
+            $localConfig,
+            'together_completions_endpoint',
+            TOGETHER_COMPLETIONS_ENDPOINT_V1
+        );
 
         if ($apiKey === '') {
             sendJsonError(
@@ -253,7 +305,38 @@ try {
         echo callTogether(
             $prompt,
             $apiKey,
-            $model ?: DEFAULT_TOGETHER_MODEL
+            $model ?: DEFAULT_TOGETHER_MODEL,
+            $endpoint
+        );
+        exit;
+    }
+
+    if ($modelChoice === MODEL_CHOICE_FIREWORKS_GPT_OSS_20B) {
+        $apiKey = readConfiguredString(
+            'FIREWORKS_API_KEY',
+            $localConfig,
+            'fireworks_api_key'
+        );
+        $model = readConfiguredString(
+            'FIREWORKS_MODEL',
+            $localConfig,
+            'fireworks_model',
+            DEFAULT_FIREWORKS_MODEL
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé Fireworks AI absente. Définissez FIREWORKS_API_KEY '
+                    . 'ou fireworks_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callFireworks(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_FIREWORKS_MODEL
         );
         exit;
     }
