@@ -7,7 +7,7 @@
  * Ne publiez jamais config.local.php et ne l'ajoutez pas à un dépôt Git.
  */
 return [
-    // Together AI : Qwen via /v1/chat/completions.
+    // Together AI : Qwen via un unique appel à /v1/completions avec n = 1.
     'together_api_key' => 'COLLEZ_ICI_VOTRE_CLE_TOGETHER_AI',
     'together_model' => 'Qwen/Qwen3.5-9B',
 

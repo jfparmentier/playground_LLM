@@ -13,6 +13,8 @@ const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
 const TOGETHER_COMPLETIONS_ENDPOINT = 'https://api.together.ai/v1/completions';
 const OPENAI_COMPLETIONS_ENDPOINT = 'https://api.openai.com/v1/completions';
 const MAX_PROMPT_LENGTH = 620;
+const COMPLETION_MAX_TOKENS = 10;
+const REQUESTED_LOGPROBS = 5;
 
 /**
  * Retourne la longueur d'une chaîne UTF-8, avec repli si mbstring est absent.
@@ -50,7 +52,7 @@ function extractApiError(
 }
 
 /**
- * Exécute une requête JSON authentifiée vers un fournisseur de modèle.
+ * Exécute une unique requête JSON authentifiée vers un fournisseur de modèle.
  */
 function callJsonApi(
     string $endpoint,
@@ -59,7 +61,9 @@ function callJsonApi(
     string $providerName
 ): string {
     if (!function_exists('curl_init')) {
-        throw new RuntimeException("L'extension PHP cURL n'est pas disponible sur le serveur.");
+        throw new RuntimeException(
+            "L'extension PHP cURL n'est pas disponible sur le serveur."
+        );
     }
 
     $encodedPayload = json_encode(
@@ -79,7 +83,7 @@ function callJsonApi(
             'Authorization: Bearer ' . $apiKey,
         ],
         CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_TIMEOUT => 60,
+        CURLOPT_TIMEOUT => 90,
     ]);
 
     $response = curl_exec($curl);
@@ -102,18 +106,15 @@ function callJsonApi(
         );
     }
 
-    // Vérifie que l'API a bien renvoyé un document JSON avant de le transmettre.
+    // Vérifie que le fournisseur a bien renvoyé du JSON, puis transmet la
+    // réponse telle quelle au navigateur pour permettre son inspection.
     json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
     return $response;
 }
 
 /**
- * Appelle Qwen en complétion textuelle brute via Together AI.
- *
- * Le prompt est transmis sans gabarit conversationnel. Les espaces situés à
- * sa fin font donc partie du contexte probabiliste, comme avec l'ancien
- * endpoint OpenAI Completions.
+ * Appelle Qwen avec une seule complétion et un seul appel HTTP Together AI.
  */
 function callTogether(string $prompt, string $apiKey, string $model): string
 {
@@ -121,10 +122,11 @@ function callTogether(string $prompt, string $apiKey, string $model): string
         'model' => $model,
         'prompt' => $prompt,
         'temperature' => 0.7,
-        'max_tokens' => 10,
-        'logprobs' => 5,
+        'max_tokens' => COMPLETION_MAX_TOKENS,
+        'logprobs' => REQUESTED_LOGPROBS,
         'top_p' => 1.0,
-        'top_k' => 50,
+        'n' => 1,
+        'stream' => false,
     ];
 
     return callJsonApi(
@@ -144,9 +146,11 @@ function callOpenAI(string $prompt, string $apiKey, string $model): string
         'model' => $model,
         'prompt' => $prompt,
         'temperature' => 0.7,
-        'max_tokens' => 10,
-        'logprobs' => 5,
+        'max_tokens' => COMPLETION_MAX_TOKENS,
+        'logprobs' => REQUESTED_LOGPROBS,
         'top_p' => 1.0,
+        'n' => 1,
+        'stream' => false,
     ];
 
     return callJsonApi(
@@ -204,7 +208,9 @@ try {
 
     if (utf8Length($prompt) > MAX_PROMPT_LENGTH) {
         sendJsonError(
-            'Le prompt dépasse la longueur maximale de ' . MAX_PROMPT_LENGTH . ' caractères.',
+            'Le prompt dépasse la longueur maximale de '
+                . MAX_PROMPT_LENGTH
+                . ' caractères.',
             400
         );
         exit;
@@ -222,7 +228,9 @@ try {
             'TOGETHER_API_KEY',
             $localConfig,
             'together_api_key',
-            is_string($localConfig['api_key'] ?? null) ? $localConfig['api_key'] : ''
+            is_string($localConfig['api_key'] ?? null)
+                ? $localConfig['api_key']
+                : ''
         );
         $model = readConfiguredString(
             'TOGETHER_MODEL',
@@ -235,13 +243,18 @@ try {
 
         if ($apiKey === '') {
             sendJsonError(
-                'Clé Together AI absente. Définissez TOGETHER_API_KEY ou together_api_key dans php/config.local.php.',
+                'Clé Together AI absente. Définissez TOGETHER_API_KEY '
+                    . 'ou together_api_key dans php/config.local.php.',
                 500
             );
             exit;
         }
 
-        echo callTogether($prompt, $apiKey, $model ?: DEFAULT_TOGETHER_MODEL);
+        echo callTogether(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_TOGETHER_MODEL
+        );
         exit;
     }
 
@@ -260,13 +273,18 @@ try {
 
         if ($apiKey === '') {
             sendJsonError(
-                'Clé OpenAI absente. Définissez OPENAI_API_KEY ou openai_api_key dans php/config.local.php.',
+                'Clé OpenAI absente. Définissez OPENAI_API_KEY '
+                    . 'ou openai_api_key dans php/config.local.php.',
                 500
             );
             exit;
         }
 
-        echo callOpenAI($prompt, $apiKey, $model ?: DEFAULT_OPENAI_MODEL);
+        echo callOpenAI(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_OPENAI_MODEL
+        );
         exit;
     }
 

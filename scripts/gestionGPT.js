@@ -578,7 +578,14 @@ function start(relance) {
         JSON.stringify(params_php),
         function (reponse_GPT_json) {
             try {
+                // Conserve la réponse brute et l'objet JSON dans la console afin
+                // de pouvoir inspecter précisément la structure renvoyée par l'API.
+                console.groupCollapsed("Réponse JSON du modèle");
+                console.log("Réponse brute :", reponse_GPT_json);
+
                 var oJson = JSON.parse(reponse_GPT_json);
+                console.log("Objet JSON analysé :", oJson);
+                console.groupEnd();
 
                 if (oJson.error) {
                     throw new Error(oJson.error.message || "Erreur retournée par le modèle.");
