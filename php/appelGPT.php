@@ -6,7 +6,12 @@ require_once __DIR__ . '/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
+const MODEL_CHOICE_OPENAI_GPT35_INSTRUCT = 'openai_gpt35_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
+const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
+const TOGETHER_CHAT_COMPLETIONS_ENDPOINT = 'https://api.together.ai/v1/chat/completions';
+const OPENAI_COMPLETIONS_ENDPOINT = 'https://api.openai.com/v1/completions';
 const MAX_PROMPT_LENGTH = 620;
 
 /**
@@ -22,10 +27,13 @@ function utf8Length(string $value): int
 }
 
 /**
- * Extrait un message d'erreur lisible depuis la réponse de Together AI.
+ * Extrait un message d'erreur lisible depuis une réponse d'API.
  */
-function extractTogetherError(string $responseBody, int $httpStatus): string
-{
+function extractApiError(
+    string $responseBody,
+    int $httpStatus,
+    string $providerName
+): string {
     $decoded = json_decode($responseBody, true);
 
     if (is_array($decoded)) {
@@ -34,22 +42,77 @@ function extractTogetherError(string $responseBody, int $httpStatus): string
             ?? null;
 
         if (is_string($message) && trim($message) !== '') {
-            return 'Together AI : ' . trim($message);
+            return $providerName . ' : ' . trim($message);
         }
     }
 
-    return 'Together AI a retourné le statut HTTP ' . $httpStatus . '.';
+    return $providerName . ' a retourné le statut HTTP ' . $httpStatus . '.';
 }
 
 /**
- * Appelle l'endpoint moderne de chat de Together AI.
+ * Exécute une requête JSON authentifiée vers un fournisseur de modèle.
  */
-function callTogether(string $prompt, string $apiKey, string $model): string
-{
+function callJsonApi(
+    string $endpoint,
+    array $payload,
+    string $apiKey,
+    string $providerName
+): string {
     if (!function_exists('curl_init')) {
         throw new RuntimeException("L'extension PHP cURL n'est pas disponible sur le serveur.");
     }
 
+    $encodedPayload = json_encode(
+        $payload,
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+    );
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $endpoint,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $encodedPayload,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey,
+        ],
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 60,
+    ]);
+
+    $response = curl_exec($curl);
+
+    if ($response === false) {
+        $curlError = curl_error($curl);
+        curl_close($curl);
+
+        throw new RuntimeException(
+            'Impossible de contacter ' . $providerName . ' : ' . $curlError
+        );
+    }
+
+    $httpStatus = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    if ($httpStatus < 200 || $httpStatus >= 300) {
+        throw new RuntimeException(
+            extractApiError($response, $httpStatus, $providerName)
+        );
+    }
+
+    // Vérifie que l'API a bien renvoyé un document JSON avant de le transmettre.
+    json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+
+    return $response;
+}
+
+/**
+ * Appelle Qwen via l'endpoint de chat de Together AI.
+ */
+function callTogether(string $prompt, string $apiKey, string $model): string
+{
     $payload = [
         'model' => $model,
         'messages' => [
@@ -68,58 +131,61 @@ function callTogether(string $prompt, string $apiKey, string $model): string
         ],
         'temperature' => 0.7,
         'max_tokens' => 10,
-        // L'endpoint de chat renvoie une collection top_logprobs distincte
-        // pour chaque token généré. Cinq candidats sont demandés par position.
+        // Together renvoie une collection top_logprobs distincte par token.
         'logprobs' => 5,
         'top_p' => 1.0,
         'top_k' => 50,
-        // Qwen 3.5 est un modèle hybride : le raisonnement est désactivé afin
-        // que la sortie commence directement par la continuation attendue.
         'reasoning' => [
             'enabled' => false,
         ],
     ];
 
-    $encodedPayload = json_encode(
+    return callJsonApi(
+        TOGETHER_CHAT_COMPLETIONS_ENDPOINT,
         $payload,
-        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+        $apiKey,
+        'Together AI'
     );
+}
 
-    $curl = curl_init();
+/**
+ * Appelle gpt-3.5-turbo-instruct via l'ancien endpoint Completions d'OpenAI.
+ */
+function callOpenAI(string $prompt, string $apiKey, string $model): string
+{
+    $payload = [
+        'model' => $model,
+        'prompt' => $prompt,
+        'temperature' => 0.7,
+        'max_tokens' => 10,
+        'logprobs' => 5,
+        'top_p' => 1.0,
+    ];
 
-    curl_setopt_array($curl, [
-        CURLOPT_URL => 'https://api.together.ai/v1/chat/completions',
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $encodedPayload,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $apiKey,
-        ],
-        CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_TIMEOUT => 60,
-    ]);
+    return callJsonApi(
+        OPENAI_COMPLETIONS_ENDPOINT,
+        $payload,
+        $apiKey,
+        'OpenAI'
+    );
+}
 
-    $response = curl_exec($curl);
+/**
+ * Lit une chaîne depuis l'environnement, puis depuis la configuration locale.
+ */
+function readConfiguredString(
+    string $environmentVariable,
+    array $localConfig,
+    string $configKey,
+    string $fallback = ''
+): string {
+    $value = getenv($environmentVariable);
 
-    if ($response === false) {
-        $curlError = curl_error($curl);
-        curl_close($curl);
-
-        throw new RuntimeException('Impossible de contacter Together AI : ' . $curlError);
+    if (!is_string($value) || trim($value) === '') {
+        $value = $localConfig[$configKey] ?? $fallback;
     }
 
-    $httpStatus = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    if ($httpStatus < 200 || $httpStatus >= 300) {
-        throw new RuntimeException(extractTogetherError($response, $httpStatus));
-    }
-
-    // Vérifie que l'API a bien renvoyé un document JSON avant de le transmettre.
-    json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-
-    return $response;
+    return is_string($value) ? trim($value) : trim($fallback);
 }
 
 try {
@@ -142,6 +208,7 @@ try {
 
     $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
     $prompt = $params['prompt'] ?? null;
+    $modelChoice = $params['modele'] ?? MODEL_CHOICE_TOGETHER_QWEN;
 
     if (!is_string($prompt) || trim($prompt) === '') {
         sendJsonError('Le prompt est absent ou invalide.', 400);
@@ -156,31 +223,67 @@ try {
         exit;
     }
 
-    $localConfig = loadLocalConfig();
-
-    $apiKey = getenv('TOGETHER_API_KEY');
-    if (!is_string($apiKey) || trim($apiKey) === '') {
-        $apiKey = $localConfig['api_key'] ?? '';
-    }
-
-    $model = getenv('TOGETHER_MODEL');
-    if (!is_string($model) || trim($model) === '') {
-        $model = $localConfig['model'] ?? DEFAULT_TOGETHER_MODEL;
-    }
-
-    if (!is_string($apiKey) || trim($apiKey) === '') {
-        sendJsonError(
-            'Clé Together AI absente. Définissez TOGETHER_API_KEY ou créez php/config.local.php.',
-            500
-        );
+    if (!is_string($modelChoice)) {
+        sendJsonError('Le modèle sélectionné est invalide.', 400);
         exit;
     }
 
-    if (!is_string($model) || trim($model) === '') {
-        $model = DEFAULT_TOGETHER_MODEL;
+    $localConfig = loadLocalConfig();
+
+    if ($modelChoice === MODEL_CHOICE_TOGETHER_QWEN) {
+        $apiKey = readConfiguredString(
+            'TOGETHER_API_KEY',
+            $localConfig,
+            'together_api_key',
+            is_string($localConfig['api_key'] ?? null) ? $localConfig['api_key'] : ''
+        );
+        $model = readConfiguredString(
+            'TOGETHER_MODEL',
+            $localConfig,
+            'together_model',
+            is_string($localConfig['model'] ?? null)
+                ? $localConfig['model']
+                : DEFAULT_TOGETHER_MODEL
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé Together AI absente. Définissez TOGETHER_API_KEY ou together_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callTogether($prompt, $apiKey, $model ?: DEFAULT_TOGETHER_MODEL);
+        exit;
     }
 
-    echo callTogether($prompt, trim($apiKey), trim($model));
+    if ($modelChoice === MODEL_CHOICE_OPENAI_GPT35_INSTRUCT) {
+        $apiKey = readConfiguredString(
+            'OPENAI_API_KEY',
+            $localConfig,
+            'openai_api_key'
+        );
+        $model = readConfiguredString(
+            'OPENAI_MODEL',
+            $localConfig,
+            'openai_model',
+            DEFAULT_OPENAI_MODEL
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé OpenAI absente. Définissez OPENAI_API_KEY ou openai_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callOpenAI($prompt, $apiKey, $model ?: DEFAULT_OPENAI_MODEL);
+        exit;
+    }
+
+    sendJsonError('Le modèle sélectionné n’est pas autorisé.', 400);
 } catch (JsonException $exception) {
     sendJsonError('Données JSON invalides.', 400);
 } catch (Throwable $exception) {

@@ -31,7 +31,7 @@
 	<script src="scripts/gestionPage.js?v=2"></script>
 	<script src="scripts/generationId.js"></script>
 	<script src="scripts/vuePremiereConnexion.js?v=2"></script>
-	<script src="scripts/gestionGPT.js?v=5"></script>
+	<script src="scripts/gestionGPT.js?v=6"></script>
 	<script src="scripts/appelsPHP.js"></script>
 
 </head>
@@ -62,10 +62,11 @@
 		<div class="vue-exclusive" id="pagePrompt">
 			<h5>TP IPSA LLM </h5>			
 
-			<!-- <label for="model_gpt">Model GPT :</label>
-			<select class="u-full-width" id="model_gpt">
-				<option value="Qwen/Qwen3.5-9B" selected>Qwen 3.5 9B</option>
-			</select> -->
+			<label for="model_llm">Modèle de complétion</label>
+			<select class="u-full-width" id="model_llm" onchange="changeModeleSelectionne();">
+				<option value="together_qwen" selected>Qwen/Qwen3.5-9B — Together AI</option>
+				<option value="openai_gpt35_instruct">gpt-3.5-turbo-instruct — OpenAI</option>
+			</select>
 
 			<!-- <label for="temperature">Temperature:</label>
 			<select class="u-full-width" id="temperature">

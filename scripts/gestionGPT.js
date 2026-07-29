@@ -15,6 +15,15 @@ function efface_resultat() {
     cacheVue("probabilités");
 }
 
+function changeModeleSelectionne() {
+    cacheVue("probabilités");
+
+    var output = document.getElementById("output_arbre_tokens");
+    if (output) {
+        output.innerHTML = "";
+    }
+}
+
 function escapeHtml(value) {
     return String(value)
         .replace(/&/g, "&amp;")
@@ -556,8 +565,12 @@ function start(relance) {
 
     afficheVue("waiting");
 
+    var modelSelect = document.getElementById("model_llm");
+    var modele = modelSelect ? modelSelect.value : "together_qwen";
+
     var params_php = {
-        prompt: prompt
+        prompt: prompt,
+        modele: modele
     };
 
     appel_php_async(
