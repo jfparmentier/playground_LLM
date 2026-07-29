@@ -1,0 +1,251 @@
+.text-center {
+  text-align: center;
+}
+.button-primary,
+.button-primary:focus,
+.button-primary:active {
+  color: #fff;
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+.button-primary:hover {
+  color: #fff;
+  background-color: #2573a7;
+  border-color: #2573a7;
+}
+.button-success,
+.button-success:focus,
+.button-success:active {
+  color: #fff;
+  background-color: #27ae60;
+  border-color: #27ae60;
+}
+.button-success:hover {
+  color: #fff;
+  background-color: #239d56;
+  border-color: #239d56;
+}
+.button-info,
+.button-info:focus,
+.button-info:active {
+  color: #fff;
+  background-color: #3498db;
+  border-color: #3498db;
+}
+.button-info:hover {
+  color: #fff;
+  background-color: #258bcf;
+  border-color: #258bcf;
+}
+.button-warning,
+.button-warning:focus,
+.button-warning:active {
+  color: #fff;
+  background-color: #f39c12;
+  border-color: #f39c12;
+}
+.button-warning:hover {
+  color: #fff;
+  background-color: #e08e0b;
+  border-color: #e08e0b;
+}
+.button-danger,
+.button-danger:focus,
+.button-danger:active {
+  color: #fff;
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+.button-danger:hover {
+  color: #fff;
+  background-color: #ad3327;
+  border-color: #ad3327;
+}
+.button.button-block {
+  width: 100%;
+}
+
+/* Arbre pédagogique des probabilités de tokens */
+.token-tree-explanation {
+  margin-bottom: 1.5rem;
+}
+
+.token-tree-scroll {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid #d9e2e8;
+  border-radius: 6px;
+  background: #f8fafb;
+  scrollbar-gutter: stable;
+}
+
+.token-tree-scroll:focus {
+  outline: 2px solid #2980b9;
+  outline-offset: 2px;
+}
+
+.token-tree-canvas {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 196px;
+  align-items: center;
+  column-gap: 78px;
+  width: max-content;
+  min-width: 100%;
+  min-height: 410px;
+  box-sizing: border-box;
+  padding: 34px 34px 30px;
+}
+
+.token-tree-links {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.token-tree-link {
+  fill: none;
+  stroke: #aebbc4;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.token-tree-link.is-selected {
+  stroke: #2980b9;
+  stroke-width: 3;
+}
+
+.token-tree-root,
+.token-tree-level {
+  position: relative;
+  z-index: 1;
+}
+
+.token-tree-root {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 68px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 2px solid #34495e;
+  border-radius: 6px;
+  background: #fff;
+  text-align: center;
+}
+
+.token-tree-root-title {
+  font-weight: 700;
+}
+
+.token-tree-root-subtitle {
+  margin-top: 2px;
+  font-size: 1.1rem;
+  color: #61717c;
+}
+
+.token-tree-level {
+  align-self: stretch;
+}
+
+.token-tree-level h6 {
+  margin: 0 0 10px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.token-tree-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.token-tree-node {
+  position: relative;
+  min-height: 58px;
+  padding: 9px 10px 8px;
+  box-sizing: border-box;
+  border: 1px solid #b8c5cd;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(44, 62, 80, 0.08);
+}
+
+.token-tree-node.is-chosen {
+  border: 2px solid #2980b9;
+  background: #eef7fc;
+  box-shadow: 0 2px 5px rgba(41, 128, 185, 0.2);
+}
+
+.token-tree-node-content {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.token-tree-token {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: "Roboto Mono", "Courier New", monospace;
+  font-weight: 600;
+}
+
+.token-tree-probability {
+  flex: 0 0 auto;
+  font-size: 1.15rem;
+  color: #4f606a;
+}
+
+.token-tree-probability-bar {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #e4eaee;
+}
+
+.token-tree-probability-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #7f9baa;
+}
+
+.token-tree-node.is-chosen .token-tree-probability-bar > span {
+  background: #2980b9;
+}
+
+.token-tree-chosen-label {
+  position: absolute;
+  top: -9px;
+  right: 7px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #2980b9;
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.token-tree-warning {
+  margin: 0;
+  color: #7b4d00;
+  text-align: center;
+}
+
+@media (max-width: 550px) {
+  .token-tree-canvas {
+    grid-auto-columns: 174px;
+    column-gap: 56px;
+    padding: 28px 24px 24px;
+  }
+}

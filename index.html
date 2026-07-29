@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>TP IPSA LLM</title>
+
+	<!-- Basic Page Needs
+	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="author" content="JF Parmentier">
+
+	<!-- Mobile Specific Metas
+	––––––––––––––––––––––––––––––––––––––––––––––––––  -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- FONT
+	––––––––––––––––––––––––––––––––––––––––––––––––––  -->
+	<!-- <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"> -->
+	<!-- <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css"> -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" referrerpolicy="no-referrer" />
+
+	<!-- CSS
+	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/extensionBoutons.css?v=2">
+	
+	<!-- Javascript
+	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+	<script src="scripts/vue.js"></script>	
+	<script src="scripts/gestionPage.js?v=2"></script>
+	<script src="scripts/generationId.js"></script>
+	<script src="scripts/vuePremiereConnexion.js?v=2"></script>
+	<script src="scripts/gestionGPT.js?v=5"></script>
+	<script src="scripts/appelsPHP.js"></script>
+
+</head>
+
+<body onload="initialisePage()">
+
+	<!-- Primary Page Layout
+	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+	<div class="container" id="conteneur">
+
+		<!-- Entête -->
+		<!-- <div class="vue-fixe" style="margin-top: 1%;">
+		</div> -->
+
+		<div class="vue-exclusive" id="vue_premiere_connexion" style="display: none; margin-top: 3%;" default>
+			<h5>Accès restreint.</strong></h5>
+			<label for="input_email_utilisateur">Entrez votre e-mail :</label>
+			<input class="u-full-width" type="text" placeholder="prenom.nom@domaine.fr" id="input_email_utilisateur">
+			<div class="vue" id="message_erreur_email" style="display: none;" hide>
+				<p><em id="contenu_message_erreur_email">e-mail non valide</em></p>
+			</div>
+			<div class="vue" id="message_erreur_utilisateur_non_valide" style="display: none;" hide>
+				<p><em id="contenu_message_erreur_utilisateur_non_valide">Utilisateur inconnu ou non autorisé.</em></p>
+			</div>
+			<button id="bouton_identification" class="button-primary u-full-width" onclick="verifieIdentifiant();">S'identifier</button>
+		</div>
+
+		<div class="vue-exclusive" id="pagePrompt">
+			<h5>TP IPSA LLM </h5>			
+
+			<!-- <label for="model_gpt">Model GPT :</label>
+			<select class="u-full-width" id="model_gpt">
+				<option value="Qwen/Qwen3.5-9B" selected>Qwen 3.5 9B</option>
+			</select> -->
+
+			<!-- <label for="temperature">Temperature:</label>
+			<select class="u-full-width" id="temperature">
+				<option value="0">0</option>
+				<option value="0.7" selected>0.7</option>
+				<option value="1">1</option>
+			</select> -->
+
+			<label for="prompt">Prompt</label>
+			<textarea class="u-full-width" rows="8" cols="33" maxlength="620" id="prompt"></textarea>
+			<!-- <textarea class="u-full-width" rows="8" cols="33" id="prompt"></textarea> -->
+
+			<div class="row" id="btns_soumissions">
+				
+				<div class="vue-exclusive" id="ready" default>
+					<div class="four columns">
+						<button class="u-full-width button-primary" onclick="start(false);">Soumettre <i class="fas fa-arrow-up"></i></button>
+					</div>
+		
+					<div class="four columns">
+						<button class="u-full-width button-success" onclick="start(true);">Relancer <i class="fas fa-sync"></i></button>
+					</div>	
+
+					<div class="four columns">
+						<button class="u-full-width button-warning" onclick="efface_resultat();">Efface résultat <i class="fas fa-backspace"></i></button>
+					</div>	
+				</div>
+
+				<div class="vue-exclusive" id="waiting" style="display: none;">
+					<div class="four columns">
+						<button disabled class="u-full-width button" >Soumettre <i class="fas fa-sync-alt fa-spin"></i></button>
+					</div>
+		
+					<div class="four columns">
+						<button disabled class="u-full-width button">Relancer <i class="fas fa-sync-alt fa-spin"></i></button>
+					</div>	
+
+					<div class="four columns">
+						<button disabled class="u-full-width button">Efface résultat <i class="fas fa-backspace"></i></button>
+					</div>	
+				</div>	
+
+			</div>
+			
+		</div>
+
+		<p></p>
+		<div class="vue" id="probabilités" style="display: none;">
+			<div class="vue-exclusive" id="vue_btn_affich_proba" default>
+				<p style="margin-top: 10%;"><small><a style="text-decoration: underline;" onclick="afficheVue('vue_proba');">Afficher l’arbre des probabilités</a></small></p>
+			</div>
+			<div class="vue-exclusive" id="vue_proba" style="display: none;" affiche="redessineArbreProbabilites">
+				<p><strong>Arbre de génération des tokens</strong></p>
+				<p class="token-tree-explanation"><small>Chaque colonne représente une position dans la complétion. Le token effectivement choisi est mis en évidence et constitue l’unique branche poursuivie vers la colonne suivante.</small></p>
+				<div id="output_arbre_tokens"></div>
+				<p><small><a style="text-decoration: underline;" onclick="afficheVue('vue_btn_affich_proba');">Cacher l’arbre des probabilités</a></small></p>
+			</div>
+		</div>
+
+		<!-- Pied de page -->		
+		<div class="vue-fixe">
+			<!-- <hr>
+			<p><em>Modèle : Qwen/Qwen3.5-9B via Together AI</em></p> -->
+		</div>
+
+	</div>
+
+</body>
+
+</html>
