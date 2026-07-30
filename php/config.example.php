@@ -18,6 +18,8 @@ return [
     // Fireworks AI : modèle serverless via /inference/v1/completions.
     'fireworks_api_key' => 'COLLEZ_ICI_VOTRE_CLE_FIREWORKS_AI',
     'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
+    'fireworks_deepseek_model' =>
+        'accounts/fireworks/models/deepseek-v4-flash',
 
     // OpenAI : modèle Instruct via /v1/completions.
     'openai_api_key' => 'COLLEZ_ICI_VOTRE_CLE_OPENAI',

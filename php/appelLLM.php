@@ -8,9 +8,12 @@ header('Content-Type: application/json; charset=utf-8');
 
 const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
 const MODEL_CHOICE_FIREWORKS_OSS_20B = 'fireworks_oss_20b';
+const MODEL_CHOICE_FIREWORKS_DEEPSEEK_V4_FLASH = 'fireworks_deepseek_v4_flash';
 const MODEL_CHOICE_OPENAI_INSTRUCT = 'openai_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
 const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/gpt-oss-20b';
+const DEFAULT_FIREWORKS_DEEPSEEK_MODEL =
+    'accounts/fireworks/models/deepseek-v4-flash';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
 const TOGETHER_COMPLETIONS_ENDPOINT_V1 = 'https://api.together.ai/v1/completions';
 const TOGETHER_COMPLETIONS_ENDPOINT_V2 = 'https://api-inference.together.ai/v2/completions';
@@ -336,6 +339,36 @@ try {
             $prompt,
             $apiKey,
             $model ?: DEFAULT_FIREWORKS_MODEL
+        );
+        exit;
+    }
+
+    if ($modelChoice === MODEL_CHOICE_FIREWORKS_DEEPSEEK_V4_FLASH) {
+        $apiKey = readConfiguredString(
+            'FIREWORKS_API_KEY',
+            $localConfig,
+            'fireworks_api_key'
+        );
+        $model = readConfiguredString(
+            'FIREWORKS_DEEPSEEK_MODEL',
+            $localConfig,
+            'fireworks_deepseek_model',
+            DEFAULT_FIREWORKS_DEEPSEEK_MODEL
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé Fireworks AI absente. Définissez FIREWORKS_API_KEY '
+                    . 'ou fireworks_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callFireworks(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_FIREWORKS_DEEPSEEK_MODEL
         );
         exit;
     }

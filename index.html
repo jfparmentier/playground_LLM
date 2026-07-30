@@ -2,7 +2,7 @@
 <html>
 <head>
 
-	<title>TP LLM</title>
+	<title>LLM de démonstration</title>
 
 	<!-- Basic Page Needs
 	–––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -61,7 +61,7 @@
 
 		<div class="vue-exclusive" id="pagePrompt">
 			<div class="page-prompt-header">
-				<h5>TP LLM</h5>
+				<h5>LLM de démonstration</h5>
 
 				<details class="model-settings">
 					<summary title="Paramètres du modèle" aria-label="Afficher les paramètres du modèle">
@@ -71,6 +71,7 @@
 						<label for="model_llm">Modèle de complétion</label>
 						<select class="u-full-width" id="model_llm" onchange="changeModeleSelectionne();">
 							<option value="fireworks_oss_20b" selected>GPT-OSS 20B — OpenAI</option>
+							<option value="fireworks_deepseek_v4_flash">DeepSeek V4 Flash — DeepSeek</option>
 							<option value="together_qwen">Qwen3.5-9B — Alibaba Cloud</option>
 							<option value="openai_instruct">GPT-3.5 Turbo Instruct — OpenAI</option>
 						</select>
