@@ -19,7 +19,7 @@ return [
     'fireworks_api_key' => 'COLLEZ_ICI_VOTRE_CLE_FIREWORKS_AI',
     'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
     'fireworks_deepseek_model' =>
-        'accounts/fireworks/models/deepseek-v4-flash',
+        'accounts/fireworks/models/deepseek-v4-flash-0731',
 
     // OpenAI : modèle Instruct via /v1/completions.
     'openai_api_key' => 'COLLEZ_ICI_VOTRE_CLE_OPENAI',

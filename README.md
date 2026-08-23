@@ -7,7 +7,7 @@ Cette application permet d’illustrer le fonctionnement autoregressif d’un gr
 Le menu de paramètres, accessible par l’icône en forme d’engrenage en haut à droite, propose quatre modèles :
 
 - **GPT-OSS 20B**, développé par OpenAI et appelé par l’API serverless Fireworks AI ;
-- **DeepSeek V4 Flash**, développé par DeepSeek et appelé par l’API serverless Fireworks AI ;
+- **DeepSeek V4 Flash 0731**, développé par DeepSeek et appelé par l’API serverless Fireworks AI ;
 - **Qwen3.5-9B**, développé par Alibaba Cloud et appelé par Together AI ;
 - **GPT-3.5 Turbo Instruct**, développé et appelé par OpenAI.
 
@@ -29,7 +29,7 @@ return [
     'fireworks_api_key' => 'VOTRE_CLE_FIREWORKS_AI',
     'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
     'fireworks_deepseek_model' =>
-        'accounts/fireworks/models/deepseek-v4-flash',
+        'accounts/fireworks/models/deepseek-v4-flash-0731',
 
     'openai_api_key' => 'VOTRE_CLE_OPENAI',
     'openai_model' => 'gpt-3.5-turbo-instruct',

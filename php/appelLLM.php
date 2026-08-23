@@ -13,7 +13,7 @@ const MODEL_CHOICE_OPENAI_INSTRUCT = 'openai_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
 const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/gpt-oss-20b';
 const DEFAULT_FIREWORKS_DEEPSEEK_MODEL =
-    'accounts/fireworks/models/deepseek-v4-flash';
+    'accounts/fireworks/models/deepseek-v4-flash-0731';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
 const TOGETHER_COMPLETIONS_ENDPOINT_V1 = 'https://api.together.ai/v1/completions';
 const TOGETHER_COMPLETIONS_ENDPOINT_V2 = 'https://api-inference.together.ai/v2/completions';
