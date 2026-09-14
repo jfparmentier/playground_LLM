@@ -247,7 +247,8 @@ try {
 
     $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
     $prompt = $params['prompt'] ?? null;
-    $modelChoice = $params['modele'] ?? MODEL_CHOICE_FIREWORKS_OSS_20B;
+    $modelChoice = $params['modele']
+        ?? MODEL_CHOICE_FIREWORKS_DEEPSEEK_V4_FLASH;
 
     if (!is_string($prompt) || trim($prompt) === '') {
         sendJsonError('Le prompt est absent ou invalide.', 400);

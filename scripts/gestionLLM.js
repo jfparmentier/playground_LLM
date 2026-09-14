@@ -1,5 +1,6 @@
 var prompt_base = "";
 var NOMBRE_TOKENS_A_AFFICHER = 5;
+var MODELE_PAR_DEFAUT = "fireworks_deepseek_v4_flash";
 
 function highlightText() {
     var textarea = document.getElementById("prompt");
@@ -13,15 +14,6 @@ function highlightText() {
 function efface_resultat() {
     document.getElementById("prompt").value = prompt_base;
     cacheVue("probabilités");
-}
-
-function changeModeleSelectionne() {
-    cacheVue("probabilités");
-
-    var output = document.getElementById("output_arbre_tokens");
-    if (output) {
-        output.innerHTML = "";
-    }
 }
 
 function escapeHtml(value) {
@@ -565,12 +557,9 @@ function start(relance) {
 
     afficheVue("waiting");
 
-    var modelSelect = document.getElementById("model_llm");
-    var modele = modelSelect ? modelSelect.value : "fireworks_oss_20b";
-
     var params_php = {
         prompt: prompt,
-        modele: modele
+        modele: MODELE_PAR_DEFAUT
     };
 
     appel_php_async(

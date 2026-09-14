@@ -2,16 +2,9 @@
 
 Cette application permet d’illustrer le fonctionnement autoregressif d’un grand modèle de langage. L’utilisateur commence une phrase, le modèle la poursuit, puis l’interface affiche un arbre des probabilités associées aux tokens générés.
 
-## Modèles disponibles
+## Modèle utilisé
 
-Le menu de paramètres, accessible par l’icône en forme d’engrenage en haut à droite, propose quatre modèles :
-
-- **GPT-OSS 20B**, développé par OpenAI et appelé par l’API serverless Fireworks AI ;
-- **DeepSeek V4 Flash 0731**, développé par DeepSeek et appelé par l’API serverless Fireworks AI ;
-- **Qwen3.5-9B**, développé par Alibaba Cloud et appelé par Together AI ;
-- **GPT-3.5 Turbo Instruct**, développé et appelé par OpenAI.
-
-GPT-OSS 20B est sélectionné par défaut.
+L’interface utilise par défaut **DeepSeek V4 Flash 0731**, développé par DeepSeek et appelé par l’API serverless Fireworks AI. Le choix du modèle n’est pas exposé dans l’interface.
 
 ## Configuration
 
