@@ -28,13 +28,9 @@ return [
     'openai_api_key' => 'COLLEZ_ICI_VOTRE_CLE_OPENAI',
     'openai_model' => 'gpt-3.5-turbo-instruct',
 
-    // Saisissez un ou plusieurs domaines sans adresse utilisateur. Les formes
-    // "ipsa.fr" et "@ipsa.fr" sont acceptées. Les sous-domaines ne sont pas
-    // autorisés implicitement : ajoutez-les explicitement dans ce tableau.
+    // Saisissez un ou plusieurs domaines sans adresse utilisateur.
     'email_domains' => [
-        'ipsa.fr',
-        'esme.fr',
-        'irit.fr',
-        'univ-tlse3.fr',
+        'univ.fr',
+        'etu.univ.fr',
     ],
 ];
