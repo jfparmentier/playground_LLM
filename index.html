@@ -31,7 +31,7 @@
 	<script src="scripts/gestionPage.js?v=2"></script>
 	<script src="scripts/generationId.js"></script>
 	<script src="scripts/vuePremiereConnexion.js?v=2"></script>
-	<script src="scripts/gestionLLM.js?v=8"></script>
+	<script src="scripts/gestionLLM.js?v=9"></script>
 	<script src="scripts/appelsPHP.js"></script>
 
 </head>
@@ -68,6 +68,15 @@
 				<option value="0.7" selected>0.7</option>
 				<option value="1">1</option>
 			</select> -->
+
+			<!-- Retirer l'attribut hidden pour réafficher le choix du modèle. -->
+			<div hidden>
+				<label for="modele">Modèle</label>
+				<select class="u-full-width" id="modele">
+					<option value="together_prism" selected>Prism Ternary Bonsai 27B — Together AI</option>
+					<option value="fireworks_nemotron_lightning">Nemotron Lightning 3.5 30B — Fireworks AI</option>
+				</select>
+			</div>
 
 			<label for="prompt">Prompt</label>
 			<textarea class="u-full-width" rows="8" cols="33" maxlength="620" id="prompt"></textarea>
@@ -123,7 +132,7 @@
 		<!-- Pied de page -->		
 		<div class="vue-fixe">
 			<!-- <hr>
-			<p><em>Modèle : Qwen/Qwen3.5-9B via Together AI</em></p> -->
+			<p><em>Modèle : Prism-ML/Ternary-Bonsai-27B via Together AI</em></p> -->
 		</div>
 
 	</div>

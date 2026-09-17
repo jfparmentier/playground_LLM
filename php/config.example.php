@@ -7,9 +7,10 @@
  * Ne publiez jamais config.local.php et ne l'ajoutez pas à un dépôt Git.
  */
 return [
-    // Together AI : Qwen via un unique appel avec n = 1.
+    // Together AI : complétion brute via un unique appel avec n = 1.
     'together_api_key' => 'COLLEZ_ICI_VOTRE_CLE_TOGETHER_AI',
     'together_model' => 'Qwen/Qwen3.5-9B',
+    'together_prism_model' => 'Prism-ML/Ternary-Bonsai-27B',
 
     // Endpoint documenté pour les complétions Together AI.
     'together_completions_endpoint' =>
@@ -20,6 +21,8 @@ return [
     'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
     'fireworks_deepseek_model' =>
         'accounts/fireworks/models/deepseek-v4-flash-0731',
+    'fireworks_nemotron_model' =>
+        'accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b',
 
     // OpenAI : modèle Instruct via /v1/completions.
     'openai_api_key' => 'COLLEZ_ICI_VOTRE_CLE_OPENAI',
@@ -30,6 +33,8 @@ return [
     // autorisés implicitement : ajoutez-les explicitement dans ce tableau.
     'email_domains' => [
         'ipsa.fr',
-        'etudiant.ipsa.fr',
+        'esme.fr',
+        'irit.fr',
+        'univ-tlse3.fr',
     ],
 ];

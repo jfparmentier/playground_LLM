@@ -7,12 +7,16 @@ require_once __DIR__ . '/bootstrap.php';
 header('Content-Type: application/json; charset=utf-8');
 
 const MODEL_CHOICE_TOGETHER_QWEN = 'together_qwen';
+const MODEL_CHOICE_TOGETHER_PRISM = 'together_prism';
 const MODEL_CHOICE_FIREWORKS_OSS_20B = 'fireworks_oss_20b';
 const MODEL_CHOICE_FIREWORKS_DEEPSEEK_V4_FLASH = 'fireworks_deepseek_v4_flash';
+const MODEL_CHOICE_FIREWORKS_NEMOTRON_LIGHTNING = 'fireworks_nemotron_lightning';
 const MODEL_CHOICE_OPENAI_INSTRUCT = 'openai_instruct';
 const DEFAULT_TOGETHER_MODEL = 'Qwen/Qwen3.5-9B';
+const DEFAULT_TOGETHER_PRISM_MODEL = 'Prism-ML/Ternary-Bonsai-27B';
 const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/gpt-oss-20b';
 const DEFAULT_FIREWORKS_DEEPSEEK_MODEL ='accounts/fireworks/models/deepseek-v4-flash-0731';
+const DEFAULT_FIREWORKS_NEMOTRON_MODEL = 'accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b';
 const DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-instruct';
 const TOGETHER_COMPLETIONS_ENDPOINT_V1 = 'https://api.together.ai/v1/completions';
 const TOGETHER_COMPLETIONS_ENDPOINT_V2 = 'https://api-inference.together.ai/v2/completions';
@@ -84,6 +88,7 @@ function callJsonApi(
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $encodedPayload,
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_USERAGENT => 'TP-LLM/1.0',
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'Authorization: Bearer ' . $apiKey,
@@ -119,7 +124,7 @@ function callJsonApi(
 }
 
 /**
- * Appelle Qwen avec une seule complétion et un seul appel HTTP Together AI.
+ * Appelle un modèle avec une seule complétion et un seul appel HTTP Together AI.
  */
 function callTogether(
     string $prompt,
@@ -247,7 +252,7 @@ try {
     $params = json_decode($_POST['params'], true, 512, JSON_THROW_ON_ERROR);
     $prompt = $params['prompt'] ?? null;
     $modelChoice = $params['modele']
-        ?? MODEL_CHOICE_FIREWORKS_DEEPSEEK_V4_FLASH;
+        ?? MODEL_CHOICE_TOGETHER_PRISM;
 
     if (!is_string($prompt) || trim($prompt) === '') {
         sendJsonError('Le prompt est absent ou invalide.', 400);
@@ -313,6 +318,43 @@ try {
         exit;
     }
 
+    if ($modelChoice === MODEL_CHOICE_TOGETHER_PRISM) {
+        $apiKey = readConfiguredString(
+            'TOGETHER_API_KEY',
+            $localConfig,
+            'together_api_key'
+        );
+        $model = readConfiguredString(
+            'TOGETHER_PRISM_MODEL',
+            $localConfig,
+            'together_prism_model',
+            DEFAULT_TOGETHER_PRISM_MODEL
+        );
+        $endpoint = readConfiguredString(
+            'TOGETHER_COMPLETIONS_ENDPOINT',
+            $localConfig,
+            'together_completions_endpoint',
+            TOGETHER_COMPLETIONS_ENDPOINT_V1
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé Together AI absente. Définissez TOGETHER_API_KEY '
+                    . 'ou together_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callTogether(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_TOGETHER_PRISM_MODEL,
+            $endpoint
+        );
+        exit;
+    }
+
     if ($modelChoice === MODEL_CHOICE_FIREWORKS_OSS_20B) {
         $apiKey = readConfiguredString(
             'FIREWORKS_API_KEY',
@@ -369,6 +411,36 @@ try {
             $prompt,
             $apiKey,
             $model ?: DEFAULT_FIREWORKS_DEEPSEEK_MODEL
+        );
+        exit;
+    }
+
+    if ($modelChoice === MODEL_CHOICE_FIREWORKS_NEMOTRON_LIGHTNING) {
+        $apiKey = readConfiguredString(
+            'FIREWORKS_API_KEY',
+            $localConfig,
+            'fireworks_api_key'
+        );
+        $model = readConfiguredString(
+            'FIREWORKS_NEMOTRON_MODEL',
+            $localConfig,
+            'fireworks_nemotron_model',
+            DEFAULT_FIREWORKS_NEMOTRON_MODEL
+        );
+
+        if ($apiKey === '') {
+            sendJsonError(
+                'Clé Fireworks AI absente. Définissez FIREWORKS_API_KEY '
+                    . 'ou fireworks_api_key dans php/config.local.php.',
+                500
+            );
+            exit;
+        }
+
+        echo callFireworks(
+            $prompt,
+            $apiKey,
+            $model ?: DEFAULT_FIREWORKS_NEMOTRON_MODEL
         );
         exit;
     }

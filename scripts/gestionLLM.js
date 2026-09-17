@@ -1,6 +1,6 @@
 var prompt_base = "";
 var NOMBRE_TOKENS_A_AFFICHER = 5;
-var MODELE_PAR_DEFAUT = "fireworks_deepseek_v4_flash";
+var MODELE_PAR_DEFAUT = "together_prism";
 
 function highlightText() {
     var textarea = document.getElementById("prompt");
@@ -157,8 +157,8 @@ function alternativesToArray(alternatives) {
 /**
  * Normalise les structures de logprobs rencontrées dans :
  * - l'ancien endpoint OpenAI /v1/completions ;
- * - Together AI /v1/chat/completions ;
- * - les réponses modernes de type chat, à titre de compatibilité défensive.
+ * - Together AI /v1/completions ;
+ * - Fireworks AI /inference/v1/completions avec une liste content.
  */
 function normaliseLogprobs(choice) {
     var logprobs = choice && choice.logprobs ? choice.logprobs : {};
@@ -559,7 +559,7 @@ function start(relance) {
 
     var params_php = {
         prompt: prompt,
-        modele: MODELE_PAR_DEFAUT
+        modele: document.getElementById("modele").value || MODELE_PAR_DEFAUT
     };
 
     appel_php_async(

@@ -4,7 +4,7 @@ Cette application permet d’illustrer le fonctionnement autoregressif d’un gr
 
 ## Modèle utilisé
 
-L’interface utilise par défaut **DeepSeek V4 Flash 0731**, développé par DeepSeek et appelé par l’API serverless Fireworks AI. Le choix du modèle n’est pas exposé dans l’interface.
+L’interface utilise par défaut **Prism Ternary Bonsai 27B** via Together AI. Le sélecteur de modèle est masqué ; retirez l’attribut `hidden` du bloc correspondant dans `index.html` pour proposer aussi **Nemotron Lightning 3.5 30B** via Fireworks AI. Les deux modèles fournissent les probabilités nécessaires à l’arbre de génération.
 
 ## Configuration
 
@@ -16,6 +16,7 @@ Copiez le fichier `php/config.example.php` sous le nom `php/config.local.php`, p
 return [
     'together_api_key' => 'VOTRE_CLE_TOGETHER_AI',
     'together_model' => 'Qwen/Qwen3.5-9B',
+    'together_prism_model' => 'Prism-ML/Ternary-Bonsai-27B',
     'together_completions_endpoint' =>
         'https://api.together.ai/v1/completions',
 
@@ -23,6 +24,8 @@ return [
     'fireworks_model' => 'accounts/fireworks/models/gpt-oss-20b',
     'fireworks_deepseek_model' =>
         'accounts/fireworks/models/deepseek-v4-flash-0731',
+    'fireworks_nemotron_model' =>
+        'accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b',
 
     'openai_api_key' => 'VOTRE_CLE_OPENAI',
     'openai_model' => 'gpt-3.5-turbo-instruct',
@@ -38,8 +41,8 @@ Le fichier `php/config.local.php` est exclu du dépôt par `.gitignore`. Il ne d
 
 Les mêmes valeurs peuvent être définies avec les variables d’environnement suivantes :
 
-- `TOGETHER_API_KEY`, `TOGETHER_MODEL`, `TOGETHER_COMPLETIONS_ENDPOINT` ;
-- `FIREWORKS_API_KEY`, `FIREWORKS_MODEL`, `FIREWORKS_DEEPSEEK_MODEL` ;
+- `TOGETHER_API_KEY`, `TOGETHER_MODEL`, `TOGETHER_PRISM_MODEL`, `TOGETHER_COMPLETIONS_ENDPOINT` ;
+- `FIREWORKS_API_KEY`, `FIREWORKS_MODEL`, `FIREWORKS_DEEPSEEK_MODEL`, `FIREWORKS_NEMOTRON_MODEL` ;
 - `OPENAI_API_KEY`, `OPENAI_MODEL`.
 
 ## Prérequis
